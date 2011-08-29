@@ -224,10 +224,7 @@ static void cypress_touchkey_early_suspend(struct early_suspend *h)
 		container_of(h, struct cypress_touchkey_devdata, early_suspend);
 
 #ifdef CONFIG_TOUCH_WAKE
-#ifdef CONFIG_GENERIC_BLN
-	if(!bln_is_ongoing())
-#endif
-	    i2c_touchkey_write_byte(devdata, devdata->backlight_off);	    
+	i2c_touchkey_write_byte(devdata, devdata->backlight_off);
 #else
 	devdata->is_powering_on = true;
 
@@ -270,54 +267,6 @@ static void cypress_touchkey_early_resume(struct early_suspend *h)
 	devdata->is_powering_on = false;
 #endif
 }
-#endif
-
-#ifdef CONFIG_TOUCH_WAKE
-static void cypress_touchwake_disable(void)
-{
-    touchwakedevdata->is_powering_on = true;
-
-    if (unlikely(touchwakedevdata->is_dead))
-	return;
-
-    disable_irq(touchwakedevdata->client->irq);
-
-#ifdef CONFIG_GENERIC_BLN
-    /*
-     * Disallow powering off the touchkey controller
-     * while a led notification is ongoing
-     */
-    if(!bln_is_ongoing())
-#endif
-	touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
-
-    all_keys_up(touchwakedevdata);
-
-    return;
-}
-
-static void cypress_touchwake_enable(void)
-{
-    touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_ON);
-    if (i2c_touchkey_write_byte(touchwakedevdata, touchwakedevdata->backlight_on)) {
-	touchwakedevdata->is_dead = true;
-	touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
-	dev_err(&touchwakedevdata->client->dev, "%s: touch keypad not responding"
-		" to commands, disabling\n", __func__);
-	return;
-    }
-    touchwakedevdata->is_dead = false;
-    enable_irq(touchwakedevdata->client->irq);
-    touchwakedevdata->is_powering_on = false;
-
-    return;
-}
-
-static struct touchwake_implementation cypress_touchwake = 
-    {
-	.enable = cypress_touchwake_enable,
-	.disable = cypress_touchwake_disable,
-    };
 #endif
 
 static void set_device_params(struct cypress_touchkey_devdata *devdata,
@@ -443,7 +392,13 @@ static void cypress_touchkey_enable_led_notification(void){
 		enable_touchkey_backlights();
 	}
 	else
+#ifdef CONFIG_TOUCH_WAKE
+	    {
+		enable_touchkey_backlights();
+	    }
+#else
 		pr_info("%s: cannot set notification led, touchkeys are enabled\n",__FUNCTION__);
+#endif
 }
 
 static void cypress_touchkey_disable_led_notification(void){
@@ -466,12 +421,74 @@ static void cypress_touchkey_disable_led_notification(void){
 		blndevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
 		#endif
 	}
+#ifdef CONFIG_TOUCH_WAKE
+	else
+	    {
+		disable_touchkey_backlights();
+	    }
+#endif	
 }
 
 static struct bln_implementation cypress_touchkey_bln = {
 	.enable = cypress_touchkey_enable_led_notification,
 	.disable = cypress_touchkey_disable_led_notification,
 };
+
+#ifdef CONFIG_TOUCH_WAKE
+static void cypress_touchwake_disable(void)
+{
+    touchwakedevdata->is_powering_on = true;
+
+    if (unlikely(touchwakedevdata->is_dead))
+	return;
+
+    disable_irq(touchwakedevdata->client->irq);
+
+#ifdef CONFIG_GENERIC_BLN
+    /*
+     * Disallow powering off the touchkey controller
+     * while a led notification is ongoing
+     */
+    if(bln_is_ongoing())
+	{
+	    cypress_touchkey_enable_led_notification();
+	}
+    else
+	{
+	    touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
+	}
+#else
+    touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
+#endif
+
+    all_keys_up(touchwakedevdata);
+
+    return;
+}
+
+static void cypress_touchwake_enable(void)
+{
+    touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_ON);
+    if (i2c_touchkey_write_byte(touchwakedevdata, touchwakedevdata->backlight_on)) {
+	touchwakedevdata->is_dead = true;
+	touchwakedevdata->pdata->touchkey_onoff(TOUCHKEY_OFF);
+	dev_err(&touchwakedevdata->client->dev, "%s: touch keypad not responding"
+		" to commands, disabling\n", __func__);
+	return;
+    }
+    touchwakedevdata->is_dead = false;
+    enable_irq(touchwakedevdata->client->irq);
+    touchwakedevdata->is_powering_on = false;
+
+    return;
+}
+
+static struct touchwake_implementation cypress_touchwake = 
+    {
+	.enable = cypress_touchwake_enable,
+	.disable = cypress_touchwake_disable,
+    };
+#endif
 
 #ifdef CONFIG_BLD
 static void cypress_touchkey_bld_disable(void)
