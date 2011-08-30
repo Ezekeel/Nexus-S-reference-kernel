@@ -19,18 +19,6 @@
 #include <linux/types.h>
 #endif
 
-#ifdef CONFIG_BLD
-#include <linux/bld.h>
-#endif
-
-#ifdef CONFIG_SCREEN_DIMMER
-#include <linux/screen_dimmer.h>
-#endif
-
-#ifdef CONFIG_TOUCH_WAKE
-#include <linux/touch_wake.h>
-#endif
-
 /*
  * The event structure itself
  */
@@ -1385,92 +1373,7 @@ void input_inject_event(struct input_handle *handle, unsigned int type, unsigned
 
 static inline void input_report_key(struct input_dev *dev, unsigned int code, int value)
 {
-#ifdef CONFIG_SCREEN_DIMMER
-#ifdef CONFIG_TOUCH_WAKE
-    if (!screen_is_dimmed() && !device_is_suspended())
-	{
-	    input_event(dev, EV_KEY, code, !!value);
-	}
-#else
-    if (!screen_is_dimmed())
-	{
-	    input_event(dev, EV_KEY, code, !!value);
-	}
-#endif
-#else
-#ifdef CONFIG_TOUCH_WAKE
-    if (!device_is_suspended())
-	{
-	    input_event(dev, EV_KEY, code, !!value);
-	}
-#else
-    input_event(dev, EV_KEY, code, !!value);
-#endif
-#endif
-
-#ifdef CONFIG_BLD
-#ifdef CONFIG_TOUCH_WAKE
-    if (!device_is_suspended())
-	{
-	    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-		{
-		    if (value == 1)
-			{
-			    touchkey_pressed();
-			    
-#ifdef CONFIG_SCREEN_DIMMER
-			    touchscreen_pressed();
-#endif
-			}
-		}
-	}
-#else
-    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-	{
-	    if (value == 1)
-		{
-		    touchkey_pressed();
-
-#ifdef CONFIG_SCREEN_DIMMER
-		    touchscreen_pressed();
-#endif
-		}
-	}
-#endif
-#else
-#ifdef CONFIG_SCREEN_DIMMER
-#ifdef CONFIG_TOUCH_WAKE
-    if (!device_is_suspended())
-	{
-	    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-		{
-		    if (value == 1)
-			{
-			    touchscreen_pressed();
-			}
-		} 
-	}
-#else
-    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-	{
-	    if (value == 1)
-		{
-		    touchscreen_pressed();
-		}
-	} 
-#endif
-#endif
-#endif
-
-#ifdef CONFIG_TOUCH_WAKE
-    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-	{
-	    if (value == 1)
-		{
-		    touch_press();
-		}
-	}
-#endif
+	input_event(dev, EV_KEY, code, !!value);
 }
 
 static inline void input_report_rel(struct input_dev *dev, unsigned int code, int value)
@@ -1480,28 +1383,7 @@ static inline void input_report_rel(struct input_dev *dev, unsigned int code, in
 
 static inline void input_report_abs(struct input_dev *dev, unsigned int code, int value)
 {
-#ifdef CONFIG_SCREEN_DIMMER
-#ifdef CONFIG_TOUCH_WAKE
-    if (!screen_is_dimmed() && !device_is_suspended())
-	{
-	    input_event(dev, EV_ABS, code, value);
-	}
-#else
-    if (!screen_is_dimmed())
-	{
-	    input_event(dev, EV_ABS, code, value);
-	}
-#endif
-#else
-#ifdef CONFIG_TOUCH_WAKE
-    if (!device_is_suspended())
-	{
-	    input_event(dev, EV_ABS, code, value);
-	}
-#else
-    input_event(dev, EV_ABS, code, value);
-#endif
-#endif
+	input_event(dev, EV_ABS, code, value);
 }
 
 static inline void input_report_ff_status(struct input_dev *dev, unsigned int code, int value)

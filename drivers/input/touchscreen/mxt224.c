@@ -321,19 +321,32 @@ static void report_input_data(struct mxt224_data *data)
 		touch_press();
 #endif
 
-		input_report_abs(data->input_dev, ABS_MT_POSITION_X,
-					data->fingers[i].x);
-		input_report_abs(data->input_dev, ABS_MT_POSITION_Y,
-					data->fingers[i].y);
-		input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR,
-					data->fingers[i].z);
-		input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR,
-					data->fingers[i].w);
-		input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, i);
-		input_mt_sync(data->input_dev);
+#ifdef CONFIG_SCREEN_DIMMER
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended() && !screen_is_dimmed())
+#else
+		if (!screen_is_dimmed())
+#endif
+#else
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended())
+#endif
+#endif
+		    {
+			input_report_abs(data->input_dev, ABS_MT_POSITION_X,
+					 data->fingers[i].x);
+			input_report_abs(data->input_dev, ABS_MT_POSITION_Y,
+					 data->fingers[i].y);
+			input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR,
+					 data->fingers[i].z);
+			input_report_abs(data->input_dev, ABS_MT_WIDTH_MAJOR,
+					 data->fingers[i].w);
+			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, i);
+			input_mt_sync(data->input_dev);
+		    }
 
 		if (data->fingers[i].z == 0)
-			data->fingers[i].z = -1;
+		    data->fingers[i].z = -1;
 	}
 	data->finger_mask = 0;
 
