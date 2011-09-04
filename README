@@ -1,10 +1,41 @@
-This is the reference kernel for my kernel modifications
-which I currently use on my Nexus S i9020 (with CM 7.03).
+This is the reference kernel for my kernel modifications which I currently 
+use on my Nexus S i9020 (with CM 7.03).
 
-It is based on Netarchy's netarchy-nexus-1.3.4-bfs-2.3.3
-kernel updated to BLN version 9.
+It is based on Netarchy's netarchy-nexus-1.3.4-bfs-2.3.3 kernel updated to 
+BLN version 9.
 
 The currently implemented modifications are:
 - Backlight Dimmer (BLD) version 3
 - Screen Dimmer version 1 
 - Touch Wake version 1
+- Kernel option 'CONFIG_MTD_SHOWHIDDEN': Unpartitioned memory space between 
+  two partitions is additionally added as an extra partition.
+
+Files changed:
+arch/arm/mach-s5pv210/herring-touchkey-led.c
+drivers/input/input.c
+drivers/input/keyboard/cypress-touchkey.c
+drivers/input/misc/gpio_event.c
+drivers/input/touchscreen/mxt224.c
+drivers/misc/bld.c
+drivers/misc/Kconfig
+drivers/misc/Makefile
+drivers/misc/screen_dimmer.c
+drivers/misc/touch_wake.c
+drivers/mtd/onenand/Kconfig
+drivers/mtd/onenand/samsung.c
+drivers/video/samsung/s3cfb.c
+drivers/video/samsung/s3cfb_nt35580.c
+drivers/video/samsung/s3cfb_tl2796.c
+include/linux/bld.h
+include/linux/screen_dimmer.h
+include/linux/touch_wake.h
+kernel/power/fbearlysuspend.c
+
+
+I do not accept donations, however if you want to make my life easier and 
+thank me for my efforts, please think about signing up for a free SpiderOak 
+account using this refer-a-friend link 
+https://spideroak.com/download/referral/b89974e492728fa6a246880f0b7cbcd5. 
+It is just like Dropbox except you can get up to 50GB of free space and 
+they have a true zero-knowledge policy.
