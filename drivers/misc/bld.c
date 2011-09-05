@@ -19,7 +19,7 @@ static bool bld_enabled = false;
 
 static bool backlight_dimmed = false;
 
-static bool backlight_suspended = false;
+static bool device_suspended = false;
 
 static unsigned int dimmer_delay = 5000;
 
@@ -35,7 +35,7 @@ static struct bld_implementation * bld_imp = NULL;
 
 static void bld_early_suspend(struct early_suspend * h)
 {
-    backlight_suspended = true;
+    device_suspended = true;
 
     cancel_delayed_work(&dimmer_work);
     flush_scheduled_work();
@@ -45,7 +45,7 @@ static void bld_early_suspend(struct early_suspend * h)
 
 static void bld_late_resume(struct early_suspend * h)
 {
-    backlight_suspended = false;
+    device_suspended = false;
 
     backlight_dimmed = false;
 
@@ -129,10 +129,7 @@ static ssize_t backlightdimmer_status_write(struct device * dev, struct device_a
 
 		    bld_enabled = true;
 
-		    if (!backlight_suspended)
-			{
-			    touchkey_pressed();
-			}
+		    touchkey_pressed();
 		} 
 	    else if (data == 0) 
 		{
@@ -176,10 +173,7 @@ static ssize_t backlightdimmer_delay_write(struct device * dev, struct device_at
 
 	    pr_info("BLD delay set to %u\n", dimmer_delay);
 
-	    if (!backlight_suspended)
-		{
-		    touchkey_pressed();
-		}
+	    touchkey_pressed();
 	} 
     else 
 	{
@@ -219,7 +213,7 @@ static struct miscdevice bld_device =
 
 void touchkey_pressed(void)
 {
-    if (bld_enabled)
+    if (!device_suspended && bld_enabled)
 	{
 	    if (!mutex_is_locked(&lock))
 		{

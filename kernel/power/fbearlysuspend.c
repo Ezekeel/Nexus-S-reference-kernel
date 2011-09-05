@@ -87,7 +87,7 @@ static struct early_suspend stop_drawing_early_suspend_desc = {
 };
 
 #ifdef CONFIG_SCREEN_DIMMER
-void bld_stop_drawing(void)
+void screendimmer_stop_drawing(void)
 {
     int ret;
     unsigned long irq_flags;
@@ -104,9 +104,9 @@ void bld_stop_drawing(void)
 	pr_warning("stop_drawing_early_suspend: timeout waiting for "
 		   "userspace to stop drawing\n");
 }
-EXPORT_SYMBOL(bld_stop_drawing);
+EXPORT_SYMBOL(screendimmer_stop_drawing);
 
-void bld_start_drawing(void)
+void screendimmer_start_drawing(void)
 {
     unsigned long irq_flags;
 
@@ -115,7 +115,7 @@ void bld_start_drawing(void)
     spin_unlock_irqrestore(&fb_state_lock, irq_flags);
     wake_up(&fb_state_wq);
 }
-EXPORT_SYMBOL(bld_start_drawing);
+EXPORT_SYMBOL(screendimmer_start_drawing);
 #endif
 
 static ssize_t wait_for_fb_sleep_show(struct kobject *kobj,

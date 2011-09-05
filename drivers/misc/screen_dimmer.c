@@ -17,14 +17,14 @@
 
 extern void s3cfb_screen_enable(void);
 extern void s3cfb_screen_disable(void);
-extern void bld_start_drawing(void);
-extern void bld_stop_drawing(void);
+extern void screendimmer_start_drawing(void);
+extern void screendimmer_stop_drawing(void);
 
 static bool screendimmer_enabled = false;
 
 static bool screen_dimmed = false;
 
-static bool screen_suspended = false;
+static bool device_suspended = false;
 
 static unsigned int dimmer_delay = 15000;
 
@@ -40,7 +40,7 @@ static struct screendimmer_implementation * screendimmer_imp = NULL;
 
 static void screendimmer_early_suspend(struct early_suspend * h)
 {
-    screen_suspended = true;
+    device_suspended = true;
 
     cancel_delayed_work(&dimmer_work);
     flush_scheduled_work();
@@ -50,7 +50,7 @@ static void screendimmer_early_suspend(struct early_suspend * h)
 
 static void screendimmer_late_resume(struct early_suspend * h)
 {
-    screen_suspended = false;
+    device_suspended = false;
 
     screen_dimmed = false;
 
@@ -70,7 +70,7 @@ static void screendimmer_disable_screen(void)
 {
     pr_info("disable screen\n");
 
-    bld_stop_drawing();
+    screendimmer_stop_drawing();
 
     if (screendimmer_imp)
 	{
@@ -97,7 +97,7 @@ static void screendimmer_enable_screen(void)
 	    screendimmer_imp->enable();
 	}
 
-    bld_start_drawing();
+    screendimmer_start_drawing();
 
     screen_dimmed = false;
 
@@ -146,10 +146,7 @@ static ssize_t screendimmer_status_write(struct device * dev, struct device_attr
 
 		    screendimmer_enabled = true;
 
-		    if (!screen_suspended)
-			{
-			    touchscreen_pressed();
-			}
+		    touchscreen_pressed();
 		} 
 	    else if (data == 0) 
 		{
@@ -195,10 +192,7 @@ static ssize_t screendimmer_delay_write(struct device * dev, struct device_attri
 
 		    pr_info("SCREENDIMMER delay set to %u\n", dimmer_delay);
 
-		    if (!screen_suspended)
-			{
-			    touchscreen_pressed();
-			}
+		    touchscreen_pressed();
 		}
 	    else
 		{
@@ -243,7 +237,7 @@ static struct miscdevice screendimmer_device =
 
 void touchscreen_pressed()
 {   
-    if (screendimmer_enabled)
+    if (!device_suspended && screendimmer_enabled)
 	{
 	    if (!mutex_is_locked(&lock))
 		{

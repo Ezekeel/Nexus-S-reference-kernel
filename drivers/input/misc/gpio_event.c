@@ -23,8 +23,6 @@
 
 #ifdef CONFIG_TOUCH_WAKE
 #include <linux/touch_wake.h>
-
-extern void set_powerkeydev(struct input_dev * input_device);
 #endif
 
 struct gpio_event {

@@ -289,36 +289,21 @@ static void input_handle_event(struct input_dev *dev,
 			{
 			    powerkey_press();
 			}
+#endif
+#if defined(CONFIG_TOUCH_WAKE) || defined(CONFIG_SCREEN_DIMMER) || defined(CONFIG_BLD)
 
 		    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
 			{
-			    if (value == 1)
-				{
-				    if (device_is_suspended())
-					{
-					    touch_press();
-					}
-				    else
-					{
-#ifdef CONFIG_BLD			
-					    touchkey_pressed();
-#endif
-#ifdef CONFIG_SCREEN_DIMMER
-					    touchscreen_pressed();
-#endif
-					}
-				}
-			}
-#else
-		    if (code == KEY_MENU || code == KEY_HOME || code == KEY_BACK || code == KEY_SEARCH)
-			{
-			    if (value == 1)
+			    if (value)
 				{
 #ifdef CONFIG_BLD			
 				    touchkey_pressed();
 #endif
 #ifdef CONFIG_SCREEN_DIMMER
 				    touchscreen_pressed();
+#endif
+#ifdef CONFIG_TOUCH_WAKE
+				    touch_press();
 #endif
 				}
 			}
