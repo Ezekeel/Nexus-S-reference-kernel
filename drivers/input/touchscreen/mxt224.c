@@ -33,6 +33,10 @@
 #include <linux/touch_wake.h>
 #endif
 
+#ifdef CONFIG_BLD
+#include <linux/bld.h>
+#endif
+
 #define OBJECT_TABLE_START_ADDRESS	7
 #define OBJECT_TABLE_ELEMENT_SIZE	6
 
@@ -336,6 +340,13 @@ static void report_input_data(struct mxt224_data *data)
 			input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, i);
 			input_mt_sync(data->input_dev);
 		    }
+
+#ifdef CONFIG_BLD
+		if (system_rev >= 0x30 && data->fingers[i].y > BLD_TOUCHKEYS_POSITION)
+		    {
+			touchkey_pressed();
+		    }
+#endif
 
 #ifdef CONFIG_SCREEN_DIMMER
 		touchscreen_pressed();

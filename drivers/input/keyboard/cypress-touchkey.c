@@ -35,6 +35,10 @@
 #include <linux/bld.h>
 #endif
 
+#ifdef CONFIG_SCREEN_DIMMER
+#include <linux/screen_dimmer.h>
+#endif
+
 #ifdef CONFIG_TOUCH_WAKE
 #include <linux/touch_wake.h>
 #endif
@@ -189,14 +193,75 @@ static irqreturn_t touchkey_interrupt_thread(int irq, void *touchkey_devdata)
 				"range\n", __func__);
 			goto err;
 		}
-		input_report_key(devdata->input_dev,
-			devdata->pdata->keycode[scancode],
-			!(data & UPDOWN_EVENT_MASK));
-	} else {
-		for (i = 0; i < devdata->pdata->keycode_cnt; i++)
+
+#ifdef CONFIG_SCREEN_DIMMER
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended() && !screen_is_dimmed())
+#else
+		if (!screen_is_dimmed())
+#endif
+#else
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended())
+#endif
+#endif
+		    {
 			input_report_key(devdata->input_dev,
-				devdata->pdata->keycode[i],
-				!!(data & (1U << i)));
+					 devdata->pdata->keycode[scancode],
+					 !(data & UPDOWN_EVENT_MASK));
+		    }
+
+#if defined(CONFIG_TOUCH_WAKE) || defined(CONFIG_SCREEN_DIMMER) || defined(CONFIG_BLD)
+		if (!(data & UPDOWN_EVENT_MASK))
+		    {
+#ifdef CONFIG_BLD			
+			touchkey_pressed();
+#endif
+#ifdef CONFIG_SCREEN_DIMMER
+			touchscreen_pressed();
+#endif
+#ifdef CONFIG_TOUCH_WAKE
+			touch_press();
+#endif
+		    }
+#endif
+	} else {
+#ifdef CONFIG_SCREEN_DIMMER
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended() && !screen_is_dimmed())
+#else
+		if (!screen_is_dimmed())
+#endif
+#else
+#ifdef CONFIG_TOUCH_WAKE
+		if (!device_is_suspended())
+#endif
+#endif
+		    {
+			for (i = 0; i < devdata->pdata->keycode_cnt; i++)
+			    input_report_key(devdata->input_dev,
+					     devdata->pdata->keycode[i],
+					     !!(data & (1U << i)));
+		    }
+
+#if defined(CONFIG_TOUCH_WAKE) || defined(CONFIG_SCREEN_DIMMER) || defined(CONFIG_BLD)
+		for (i = 0; i < devdata->pdata->keycode_cnt; i++)
+		    {
+			if(!!(data & (1U << i)))
+			    {
+#ifdef CONFIG_BLD			
+				touchkey_pressed();
+#endif
+#ifdef CONFIG_SCREEN_DIMMER
+				touchscreen_pressed();
+#endif
+#ifdef CONFIG_TOUCH_WAKE
+				touch_press();
+#endif
+				break;
+			    }
+		    }
+#endif
 	}
 
 	input_sync(devdata->input_dev);

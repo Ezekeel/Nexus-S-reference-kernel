@@ -3,6 +3,8 @@
 #ifndef _LINUX_BLD_H
 #define _LINUX_BLD_H
 
+#define BLD_TOUCHKEYS_POSITION 830
+
 struct bld_implementation
 {
     void (* enable)(void);
