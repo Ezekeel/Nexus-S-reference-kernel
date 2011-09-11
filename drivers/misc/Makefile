@@ -47,3 +47,4 @@ obj-$(CONFIG_GENERIC_BLN) += bln.o
 obj-$(CONFIG_BLD) += bld.o
 obj-$(CONFIG_SCREEN_DIMMER) += screen_dimmer.o
 obj-$(CONFIG_TOUCH_WAKE) += touch_wake.o
+obj-$(CONFIG_BLX) += blx.o
