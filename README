@@ -8,6 +8,7 @@ The currently implemented modifications are:
 - Backlight Dimmer (BLD) version 3
 - Screen Dimmer version 1 
 - Touch Wake version 1
+- Battery Life eXtender (BLX) version 1
 - Kernel option 'CONFIG_MTD_SHOWHIDDEN': Unpartitioned memory space between 
   two partitions is additionally added as an extra partition.
 
@@ -18,16 +19,19 @@ drivers/input/keyboard/cypress-touchkey.c
 drivers/input/misc/gpio_event.c
 drivers/input/touchscreen/mxt224.c
 drivers/misc/bld.c
+drivers/misc/blx.c
 drivers/misc/Kconfig
 drivers/misc/Makefile
 drivers/misc/screen_dimmer.c
 drivers/misc/touch_wake.c
 drivers/mtd/onenand/Kconfig
 drivers/mtd/onenand/samsung.c
+drivers/power/s5pc110_battery.c
 drivers/video/samsung/s3cfb.c
 drivers/video/samsung/s3cfb_nt35580.c
 drivers/video/samsung/s3cfb_tl2796.c
 include/linux/bld.h
+include/linux/blx.h
 include/linux/screen_dimmer.h
 include/linux/touch_wake.h
 kernel/power/fbearlysuspend.c
