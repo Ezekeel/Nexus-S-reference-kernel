@@ -37,9 +37,12 @@ include/linux/touch_wake.h
 kernel/power/fbearlysuspend.c
 
 
-I do not accept donations, however if you want to make my life easier and 
-thank me for my efforts, please think about signing up for a free SpiderOak 
-account using this refer-a-friend link 
-https://spideroak.com/download/referral/b89974e492728fa6a246880f0b7cbcd5. 
-It is just like Dropbox except you can get up to 50GB of free space and 
-they have a true zero-knowledge policy.
+I do not accept donations and since I reached my 50GB limit of free space 
+on SpiderOak, thanks to all of you kind people who got an account using my 
+referral link, I could not ask for more. 
+Instead if you really want to donate your hard earned money to someone who 
+deserves and needs it, consider donating to the Free Software Foundation at 
+fsf.org: These guys are at the frontline when it comes to keeping Linux free 
+and fighting these greedy bastards who think they are entitled to collect 
+royalties and other fees from Linux users due to some silly patents - and if 
+Linux falls, Android will be next.
