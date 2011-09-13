@@ -16,6 +16,7 @@ Files changed:
 arch/arm/mach-s5pv210/herring-touchkey-led.c
 drivers/input/input.c
 drivers/input/keyboard/cypress-touchkey.c
+drivers/input/misc/gp2a.c
 drivers/input/misc/gpio_event.c
 drivers/input/touchscreen/mxt224.c
 drivers/misc/bld.c
