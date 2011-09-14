@@ -418,6 +418,8 @@ static void s3c_bat_discharge_reason(struct chg_data *chg)
 	if (chg->bat_info.batt_soc >= get_charginglimit())
 	    {
 		chg->bat_info.dis_reason |= DISCONNECT_BAT_FULL;
+
+		chg->bat_info.batt_is_full = true;
 	    }
 #endif
 
