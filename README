@@ -27,6 +27,7 @@ drivers/misc/screen_dimmer.c
 drivers/misc/touch_wake.c
 drivers/mtd/onenand/Kconfig
 drivers/mtd/onenand/samsung.c
+drivers/power/max17040_battery.c
 drivers/power/s5pc110_battery.c
 drivers/video/samsung/s3cfb.c
 drivers/video/samsung/s3cfb_nt35580.c
