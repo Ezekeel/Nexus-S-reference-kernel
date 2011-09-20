@@ -14,7 +14,7 @@
 
 #define BATTERYLIFEEXTENDER_VERSION 1
 
-static int charging_limit;
+static int charging_limit = 96;
 
 static ssize_t blx_charginglimit_read(struct device * dev, struct device_attribute * attr, char * buf)
 {
@@ -27,7 +27,7 @@ static ssize_t blx_charginglimit_write(struct device * dev, struct device_attrib
 
     if(sscanf(buf, "%u\n", &data) == 1) 
 	{
-	    if (data >= 0 && data <= 101)
+	    if (data >= 0 && data <= 96)
 		{
 		    charging_limit = data;
 		    
@@ -98,8 +98,6 @@ static int __init blx_init(void)
 	    pr_err("%s sysfs_create_group fail\n", __FUNCTION__);
 	    pr_err("Failed to create sysfs group for device (%s)!\n", blx_device.name);
 	}
-
-    charging_limit = 101;
 
     return 0;
 }
