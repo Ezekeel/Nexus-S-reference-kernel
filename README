@@ -11,9 +11,13 @@ The currently implemented modifications are:
 - Battery Life eXtender (BLX) version 1
 - Kernel option 'CONFIG_MTD_SHOWHIDDEN': Unpartitioned memory space between 
   two partitions is additionally added as an extra partition.
+- 'Snappy' CPUfreq governor
 
 Files changed:
 arch/arm/mach-s5pv210/herring-touchkey-led.c
+drivers/cpufreq/cpufreq_snappy.c
+drivers/cpufreq/Kconfig
+drivers/cpufreq/Makefile
 drivers/input/input.c
 drivers/input/keyboard/cypress-touchkey.c
 drivers/input/misc/gp2a.c
