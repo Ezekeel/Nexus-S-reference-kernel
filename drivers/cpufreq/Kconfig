@@ -127,6 +127,13 @@ config CPU_FREQ_DEFAULT_GOV_SMARTASS
 	help
 	  Use the CPUFreq governor 'smartass' as default.
 
+config CPU_FREQ_DEFAULT_GOV_SNAPPY
+        bool "snappy"
+        select CPU_FREQ_GOV_SNAPPY
+        select CPU_FREQ_GOV_PERFORMANCE
+        help
+          Use the CPUFreq governor 'snappy' as default.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -193,6 +200,10 @@ config CPU_FREQ_GOV_INTERACTIVE
 config CPU_FREQ_GOV_SMARTASS
 	tristate "'smartass' cpufreq governor"
 	depends on CPU_FREQ
+
+config CPU_FREQ_GOV_SNAPPY
+        tristate "'snappy' cpufreq governor"
+        depends on CPU_FREQ
 
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
