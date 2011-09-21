@@ -34,7 +34,7 @@
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
 #define MIN_FREQUENCY_DOWN_THRESHOLD		(1)
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
-#define DEF_MAX_SAMPLE_RATE                     (100000)
+#define DEF_MAX_SAMPLE_RATE                     (50000)
 
 /*
  * The polling frequency of this governor depends on the capability of
@@ -571,7 +571,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
 	    }
 
-	    sampling_rate = max(min_sampling_rate, sampling_rate - sampling_rate / 100);
+	    sampling_rate = max(min_sampling_rate, sampling_rate - sampling_rate / 50);
 	} else {
 	    sampling_rate = min(dbs_tuners_ins.max_sampling_rate, sampling_rate + sampling_rate / 100);
 	}
@@ -595,7 +595,7 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 		__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
 	    }
 
-	    sampling_rate = max(min_sampling_rate, sampling_rate - sampling_rate / 100);
+	    sampling_rate = max(min_sampling_rate, sampling_rate - sampling_rate / 50);
 	} else {
 	    sampling_rate = min(dbs_tuners_ins.max_sampling_rate, sampling_rate + sampling_rate / 100);
 	}
