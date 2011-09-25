@@ -38,6 +38,7 @@ drivers/video/samsung/s3cfb_nt35580.c
 drivers/video/samsung/s3cfb_tl2796.c
 include/linux/bld.h
 include/linux/blx.h
+include/linux/cpufreq.h
 include/linux/screen_dimmer.h
 include/linux/touch_wake.h
 kernel/power/fbearlysuspend.c
