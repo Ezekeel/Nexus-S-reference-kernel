@@ -12,10 +12,15 @@ The currently implemented modifications are:
 - Kernel option 'CONFIG_MTD_SHOWHIDDEN': Unpartitioned memory space between 
   two partitions is additionally added as an extra partition.
 - 'Lazy' CPUfreq governor
+- Live OC version 1
 
 Files changed:
+arch/arm/mach-s5pv210/cpu-freq.c
 arch/arm/mach-s5pv210/herring-touchkey-led.c
+arch/arm/plat-s5p/include/plat/pll.h
+drivers/cpufreq/cpufreq.c
 drivers/cpufreq/cpufreq_lazy.c
+drivers/cpufreq/cpufreq_stats.c
 drivers/cpufreq/Kconfig
 drivers/cpufreq/Makefile
 drivers/input/input.c
@@ -26,6 +31,7 @@ drivers/input/touchscreen/mxt224.c
 drivers/misc/bld.c
 drivers/misc/blx.c
 drivers/misc/Kconfig
+drivers/misc/live_oc.c
 drivers/misc/Makefile
 drivers/misc/screen_dimmer.c
 drivers/misc/touch_wake.c
