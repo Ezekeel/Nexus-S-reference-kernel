@@ -173,7 +173,10 @@ static struct s3c_freq clk_info[] = {
 #ifdef CONFIG_LIVE_OC
 extern void cpufreq_stats_reset(void);
 
+static unsigned int sleep_freq;
+
 static unsigned long original_fclk[sizeof(clk_info) /  sizeof(struct s3c_freq)];
+
 static int dividers[sizeof(clk_info) /  sizeof(struct s3c_freq)];
 #endif
 
@@ -674,6 +677,8 @@ static void liveoc_init(void)
 	original_fclk[index] = clk_info[index].fclk;
 	dividers[index] = find_divider(clk_info[index].fclk / 1000);
 
+	sleep_freq = SLEEP_FREQ;
+
 	i++;
     }
 
@@ -704,6 +709,9 @@ void liveoc_update(unsigned int oc_value)
 
 	if (freq_table[i].frequency > apll_freq_max)
 	    apll_freq_max = freq_table[i].frequency;
+
+	if (original_fclk[index] / (clkdiv_val[index][0] + 1) == SLEEP_FREQ)
+	    sleep_freq = clk_info[index].armclk;
 
 	i++;
     }
@@ -804,15 +812,24 @@ static int s5pv210_cpufreq_notifier_event(struct notifier_block *this,
 	case PM_SUSPEND_PREPARE:
 		max = policy->max;
 		min = policy->min;
+#ifdef CONFIG_LIVE_OC
+		policy->max = policy->min = sleep_freq;
+		ret = cpufreq_driver_target(policy, sleep_freq,
+#else
 		policy->max = policy->min = SLEEP_FREQ;
 		ret = cpufreq_driver_target(policy, SLEEP_FREQ,
+#endif
 				DISABLE_FURTHER_CPUFREQ);
 		if (ret < 0)
 			return NOTIFY_BAD;
 		return NOTIFY_OK;
 	case PM_POST_RESTORE:
 	case PM_POST_SUSPEND:
+#ifdef CONFIG_LIVE_OC
+		cpufreq_driver_target(policy, sleep_freq,
+#else
 		cpufreq_driver_target(policy, SLEEP_FREQ,
+#endif
 				ENABLE_FURTHER_CPUFREQ);
 		policy->max = max;
 		policy->min = min;
