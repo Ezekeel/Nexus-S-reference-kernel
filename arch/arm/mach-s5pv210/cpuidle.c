@@ -216,9 +216,10 @@ static void s5p_gpio_pdn_conf(void)
 	} while (gpio_base <= S5PV210_MP28_BASE);
 }
 
-static void s5p_enter_didle(bool top_on)
+static void s5p_enter_didle(void)
 {
 	unsigned long tmp;
+	unsigned long save_eint_mask;
 
 	/* store the physical address of the register recovery block */
 	__raw_writel(phy_regs_save, S5P_INFORM2);
@@ -241,16 +242,25 @@ static void s5p_enter_didle(bool top_on)
 	/* GPIO Power Down Control */
 	s5p_gpio_pdn_conf();
 
+	/*
+	 * Configure external interrupt wakeup mask
+	 * Only XEINT[30] (key input) enabled 
+	 */
+	save_eint_mask = __raw_readl(S5P_EINT_WAKEUP_MASK);
+	tmp = 0xFFFFFFFF;
+	tmp &= ~((1<<30));
+	__raw_writel(tmp, S5P_EINT_WAKEUP_MASK);
+
 	/* Clear wakeup status register */
 	tmp = __raw_readl(S5P_WAKEUP_STAT);
 	__raw_writel(tmp, S5P_WAKEUP_STAT);
 
 	/*
 	 * Wakeup source configuration for didle
-	 * all wakeup sources are enabled
+	 * All wakeup sources disabled
 	 */
 	tmp = __raw_readl(S5P_WAKEUP_MASK);
-	tmp &= ~((1<<1) | (1<<2) | (1<<3) | (1<<4) | (1<<5) | (1<<9) | (1<<10) | (1<<11) | (1<<12) | (1<<13) | (1<<14) | (1<<15));
+	tmp |= 0xffff;
 	__raw_writel(tmp, S5P_WAKEUP_MASK);
 
 	/*
@@ -261,13 +271,7 @@ static void s5p_enter_didle(bool top_on)
 	 */
 	tmp = __raw_readl(S5P_IDLE_CFG);
 	tmp &= ~(0x3fU << 26);
-
-	if (top_on) {
-	    tmp |= ((2<<30) | (2<<28) | (1<<26) | (1<<0));
-	} else {
-	    tmp |= ((1<<30) | (1<<28) | (1<<26) | (1<<0));
-	}
-	
+	tmp |= ((1<<30) | (1<<28) | (1<<26) | (1<<0));
 	__raw_writel(tmp, S5P_IDLE_CFG);
 
 	/* Power mode Config setting */
@@ -282,7 +286,6 @@ static void s5p_enter_didle(bool top_on)
 	    (__raw_readl(S5P_VIC2REG(VIC_RAW_STATUS)) & vic_regs[2]) |
 	    (__raw_readl(S5P_VIC3REG(VIC_RAW_STATUS)) & vic_regs[3]))
 		goto skipped_didle;
-
 
 	/* APLL_LOCK : 0x2cf a 30us */
 	__raw_writel(0x2cf, S5P_APLL_LOCK);
@@ -303,6 +306,8 @@ static void s5p_enter_didle(bool top_on)
 	cpu_init();
 
 skipped_didle:
+	__raw_writel(save_eint_mask, S5P_EINT_WAKEUP_MASK);
+
 	tmp = __raw_readl(S5P_IDLE_CFG);
 	tmp &= ~((3<<30) | (3<<28) | (3<<26) | (1<<0));
 	tmp |= ((2<<30) | (2<<28));
@@ -313,13 +318,11 @@ skipped_didle:
 	tmp &= S5P_CFG_WFI_CLEAN;
 	__raw_writel(tmp, S5P_PWR_CFG);
 
-	if (!top_on) {
-	    /* Release retention GPIO/CF/MMC/UART IO */
-	    tmp = __raw_readl(S5P_OTHERS);
-	    tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF |	\
-		    S5P_OTHERS_RET_MMC | S5P_OTHERS_RET_UART);
-	    __raw_writel(tmp, S5P_OTHERS);
-	}
+	/* Release retention GPIO/CF/MMC/UART IO */
+	tmp = __raw_readl(S5P_OTHERS);
+	tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF |	\
+		S5P_OTHERS_RET_MMC | S5P_OTHERS_RET_UART);
+	__raw_writel(tmp, S5P_OTHERS);
 
 	__raw_writel(vic_regs[0], S5P_VIC0REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[1], S5P_VIC1REG(VIC_INT_ENABLE));
@@ -356,15 +359,13 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 
 #ifdef CONFIG_CPU_DIDLE
 #ifdef CONFIG_S5P_INTERNAL_DMA
-	if (loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
+	if (check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
 #else
-	if (loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
+	if (check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
 #endif
 	    s5p_enter_idle();
-	} else if (check_power_clock_gating()) {
-	    s5p_enter_didle(true);
 	} else {
-	    s5p_enter_didle(false);
+	    s5p_enter_didle();
 	}
 #else   
 	s5p_enter_idle();
