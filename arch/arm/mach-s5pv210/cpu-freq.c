@@ -687,7 +687,7 @@ static void liveoc_init(void)
 
 void liveoc_update(unsigned int oc_value)
 {
-    int i, index;
+    int i, index, index_min = L0, index_max = L0;
 
     struct cpufreq_policy * policy = cpufreq_cpu_get(0);
 
@@ -698,6 +698,12 @@ void liveoc_update(unsigned int oc_value)
 
 	index = freq_table[i].index;
 	
+	if (clk_info[index].armclk == policy->user_policy.min)
+	    index_min = index;
+
+	if (clk_info[index].armclk == policy->user_policy.max)
+	    index_max = index;
+
 	clk_info[index].fclk = (original_fclk[index] / 100) * oc_value;
 	dividers[index] = find_divider(clk_info[index].fclk / 1000);
 
@@ -719,8 +725,9 @@ void liveoc_update(unsigned int oc_value)
     apll_freq_max /= 1000;
 
     cpufreq_frequency_table_cpuinfo(policy, freq_table);
-    policy->user_policy.min = policy->min;
-    policy->user_policy.max = policy->max;
+
+    policy->user_policy.min = freq_table[index_min].frequency;
+    policy->user_policy.max = freq_table[index_max].frequency;  
 
     cpufreq_stats_reset();
 
