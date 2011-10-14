@@ -244,11 +244,12 @@ static void s5p_enter_didle(void)
 
 	/*
 	 * Configure external interrupt wakeup mask
-	 * Only XEINT[30] (key input) enabled 
+	 * Only XEINT[22] = GPH2[6] = GPIO_nPOWER = GPIO_N_POWER
+	 * and XEINT[29] = GPH3[5] = GPIO_OK_KEY are enabled
 	 */
 	save_eint_mask = __raw_readl(S5P_EINT_WAKEUP_MASK);
 	tmp = 0xFFFFFFFF;
-	tmp &= ~((1<<30));
+	tmp &= ~((1<<22) | (1<<29));
 	__raw_writel(tmp, S5P_EINT_WAKEUP_MASK);
 
 	/* Clear wakeup status register */
@@ -257,10 +258,11 @@ static void s5p_enter_didle(void)
 
 	/*
 	 * Wakeup source configuration for didle
-	 * All wakeup sources disabled
+	 * RTC TICK and I2S are enabled as wakeup sources
 	 */
 	tmp = __raw_readl(S5P_WAKEUP_MASK);
-	tmp |= 0xffff;
+	tmp |= 0xfe3e;
+	tmp &= ~((1<<2) | (1<<13));
 	__raw_writel(tmp, S5P_WAKEUP_MASK);
 
 	/*
