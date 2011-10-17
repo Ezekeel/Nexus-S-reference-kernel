@@ -110,18 +110,16 @@ static void screendimmer_enable_screen(void)
 
 static void screendimmer_toggle_screen(struct work_struct * dimmer_work)
 {
-    if (!mutex_is_locked(&lock))
-	{
-	    mutex_lock(&lock);
-	}
-
     if (screen_dimmed)
 	{
 	    screendimmer_enable_screen();
 	}
     else
 	{
-	    screendimmer_disable_screen();
+	    if (mutex_trylock(&lock))
+		{
+		    screendimmer_disable_screen();
+		}
 	}
 
     return;
@@ -239,16 +237,17 @@ void touchscreen_pressed()
 {   
     if (!device_suspended && screendimmer_enabled)
 	{
-	    if (!mutex_is_locked(&lock))
+	    if (screen_dimmed)
 		{
-		    if (screen_dimmed)
+		    if (mutex_trylock(&lock))
 			{
-			    mutex_lock(&lock);
-
 			    cancel_delayed_work(&dimmer_work);
 			    schedule_delayed_work(&dimmer_work, 0);
 			}
-		    else
+		}
+	    else
+		{
+		    if (!mutex_is_locked(&lock))
 			{
 			    cancel_delayed_work(&dimmer_work);
 			    schedule_delayed_work(&dimmer_work, msecs_to_jiffies(dimmer_delay));

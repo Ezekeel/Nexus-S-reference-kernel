@@ -93,18 +93,16 @@ static void bld_enable_backlights(void)
 
 static void bld_toggle_backlights(struct work_struct * dimmer_work)
 {
-    if (!mutex_is_locked(&lock))
-	{
-	    mutex_lock(&lock);
-	}
-
     if (backlight_dimmed)
 	{
 	    bld_enable_backlights();
 	}
     else
 	{
-	    bld_disable_backlights();
+	    if (mutex_trylock(&lock))
+		{
+		    bld_disable_backlights();
+		}
 	}
 
     return;
@@ -215,16 +213,17 @@ void touchkey_pressed(void)
 {
     if (!device_suspended && bld_enabled)
 	{
-	    if (!mutex_is_locked(&lock))
+	    if (backlight_dimmed)
 		{
-		    if (backlight_dimmed)
+		    if (mutex_trylock(&lock))
 			{
-			    mutex_lock(&lock);
-
 			    cancel_delayed_work(&dimmer_work);
 			    schedule_delayed_work(&dimmer_work, 0);
 			}
-		    else
+		}
+	    else
+		{
+		    if (!mutex_is_locked(&lock))
 			{
 			    cancel_delayed_work(&dimmer_work);
 			    schedule_delayed_work(&dimmer_work, msecs_to_jiffies(dimmer_delay));

@@ -264,10 +264,8 @@ EXPORT_SYMBOL(powerkey_press);
 
 void touch_press(void)
 {   
-    if (device_suspended && touchwake_enabled && !mutex_is_locked(&lock))
+    if (device_suspended && touchwake_enabled && mutex_trylock(&lock))
 	{
-	    mutex_lock(&lock);
-
 	    schedule_work(&presspower_work);
 	}
 
