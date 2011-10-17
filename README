@@ -34,6 +34,7 @@ drivers/input/misc/gpio_event.c
 drivers/input/touchscreen/mxt224.c
 drivers/misc/bld.c
 drivers/misc/blx.c
+drivers/misc/deep_idle.c
 drivers/misc/Kconfig
 drivers/misc/live_oc.c
 drivers/misc/Makefile
@@ -49,6 +50,7 @@ drivers/video/samsung/s3cfb_tl2796.c
 include/linux/bld.h
 include/linux/blx.h
 include/linux/cpufreq.h
+include/linux/deep_idle.h
 include/linux/screen_dimmer.h
 include/linux/touch_wake.h
 kernel/power/fbearlysuspend.c
