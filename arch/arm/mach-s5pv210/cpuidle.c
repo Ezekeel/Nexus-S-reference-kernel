@@ -28,6 +28,7 @@
 
 #ifdef CONFIG_CPU_DIDLE
 #include <linux/dma-mapping.h>
+#include <linux/deep_idle.h>
 
 #include <plat/regs-otg.h>
 #include <mach/cpuidle.h>
@@ -363,9 +364,9 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 
 #ifdef CONFIG_CPU_DIDLE
 #ifdef CONFIG_S5P_INTERNAL_DMA
-	if (check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
 #else
-	if (check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
 #endif
 	    s5p_enter_idle();
 	} else {

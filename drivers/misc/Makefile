@@ -49,3 +49,4 @@ obj-$(CONFIG_SCREEN_DIMMER) += screen_dimmer.o
 obj-$(CONFIG_TOUCH_WAKE) += touch_wake.o
 obj-$(CONFIG_BLX) += blx.o
 obj-$(CONFIG_LIVE_OC) += live_oc.o
+obj-$(CONFIG_CPU_DIDLE) += deep_idle.o
