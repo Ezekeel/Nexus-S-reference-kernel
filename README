@@ -19,6 +19,7 @@ Files changed:
 arch/arm/mach-s5pv210/cpu-freq.c
 arch/arm/mach-s5pv210/cpuidle.c
 arch/arm/mach-s5pv210/didle.S
+arch/arm/mach-s5pv210/herring-rfkill.c
 arch/arm/mach-s5pv210/herring-touchkey-led.c
 arch/arm/mach-s5pv210/include/mach/cpuidle.h
 arch/arm/plat-s5p/include/plat/pll.h
@@ -53,6 +54,7 @@ include/linux/cpufreq.h
 include/linux/deep_idle.h
 include/linux/screen_dimmer.h
 include/linux/touch_wake.h
+kernel/power/suspend.c
 kernel/power/fbearlysuspend.c
 
 
