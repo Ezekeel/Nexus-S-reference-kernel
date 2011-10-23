@@ -361,7 +361,7 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 
 #ifdef CONFIG_LIVE_OC
 	if (!mutex_trylock(&set_freq_lock))
-	    goto no_lock;
+	    return -EINVAL;
 #else
 	mutex_lock(&set_freq_lock);
 #endif
@@ -605,9 +605,6 @@ static int s5pv210_cpufreq_target(struct cpufreq_policy *policy,
 		first_run = false;
 out:
 	mutex_unlock(&set_freq_lock);
-#ifdef CONFIG_LIVE_OC
-no_lock:
-#endif
 	return ret;
 }
 
