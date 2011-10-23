@@ -56,7 +56,7 @@ extern int exp_UV_mV[5];
 
 /* frequency */
 static struct cpufreq_frequency_table freq_table[] = {
-	{L0, 1000*1000},
+	{L0, 1200*1000},
 	{L1, 800*1000},
 	{L2, 400*1000},
 	{L3, 200*1000},
@@ -69,13 +69,13 @@ struct s5pv210_dvs_conf {
 	unsigned long       int_volt;   /* uV */
 };
 
-const unsigned long arm_volt_max = 1350000;
+const unsigned long arm_volt_max = 1400000;
 const unsigned long int_volt_max = 1250000;
 
 static struct s5pv210_dvs_conf dvs_conf[] = {
 	[L0] = {
-		.arm_volt   = 1250000,
-		.int_volt   = 1100000,
+		.arm_volt   = 1400000,
+		.int_volt   = 1150000,
 	},
 	[L1] = {
 		.arm_volt   = 1200000,
@@ -101,7 +101,7 @@ static u32 clkdiv_val[5][11] = {
 	 * MFC, G3D }
 	 */
 	/* L0 : [1000/200/200/100][166/83][133/66][200/200] */
-	{0, 4, 4, 1, 3, 1, 4, 1, 3, 0, 0},
+	{0, 5, 5, 1, 3, 1, 4, 1, 3, 0, 0},
 	/* L1 : [800/200/200/100][166/83][133/66][200/200] */
 	{0, 3, 3, 1, 3, 1, 4, 1, 3, 0, 0},
 	/* L2 : [400/200/200/100][166/83][133/66][200/200] */
@@ -113,9 +113,9 @@ static u32 clkdiv_val[5][11] = {
 };
 
 static struct s3c_freq clk_info[] = {
-	[L0] = {	/* L0: 1GHz */
-		.fclk       = 1000000,
-		.armclk     = 1000000,
+	[L0] = {	/* L0: 1.2GHz */
+		.fclk       = 1200000,
+		.armclk     = 1200000,
 		.hclk_tns   = 0,
 		.hclk       = 133000,
 		.pclk       = 66000,
