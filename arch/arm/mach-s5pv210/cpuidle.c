@@ -29,6 +29,7 @@
 #ifdef CONFIG_CPU_DIDLE
 #include <linux/dma-mapping.h>
 #include <linux/deep_idle.h>
+#include <linux/notifier.h>
 
 #include <plat/regs-otg.h>
 #include <mach/cpuidle.h>
@@ -36,6 +37,7 @@
 
 extern bool suspend_ongoing(void);
 extern bool bt_is_running(void);
+extern int pm_notifier_call_chain(unsigned long val);
 
 /*
  * For saving & restoring VIC register before entering
@@ -295,9 +297,6 @@ static void s5p_enter_didle(void)
 	    (__raw_readl(S5P_VIC3REG(VIC_RAW_STATUS)) & vic_regs[3]))
 		goto skipped_didle;
 
-	/* APLL_LOCK : 0x2cf a 30us */
-	__raw_writel(0x2cf, S5P_APLL_LOCK);
-
 	/* SYSCON_INT_DISABLE */
 	tmp = __raw_readl(S5P_OTHERS);
 	tmp |= S5P_OTHER_SYSC_INTOFF;
@@ -373,7 +372,9 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 #endif
 	    s5p_enter_idle();
 	} else {
+	    pm_notifier_call_chain(PM_SUSPEND_PREPARE);
 	    s5p_enter_didle();
+	    pm_notifier_call_chain(PM_POST_SUSPEND);
 	}
 #else   
 	s5p_enter_idle();
