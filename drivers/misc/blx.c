@@ -14,7 +14,7 @@
 
 #define BATTERYLIFEEXTENDER_VERSION 1
 
-static int charging_limit = 96;
+static int charging_limit = MAX_CHARGINGLIMIT;
 
 static ssize_t blx_charginglimit_read(struct device * dev, struct device_attribute * attr, char * buf)
 {
@@ -27,7 +27,7 @@ static ssize_t blx_charginglimit_write(struct device * dev, struct device_attrib
 
     if(sscanf(buf, "%u\n", &data) == 1) 
 	{
-	    if (data >= 0 && data <= 96)
+	    if (data >= 0 && data <= MAX_CHARGINGLIMIT)
 		{
 		    charging_limit = data;
 		    
