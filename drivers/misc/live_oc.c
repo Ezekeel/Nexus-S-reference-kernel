@@ -30,9 +30,12 @@ static ssize_t liveoc_ocvalue_write(struct device * dev, struct device_attribute
 	{
 	    if (data >= 100 && data <= 120)
 		{
-		    oc_value = data;
+		    if (data != oc_value)
+			{
+			    oc_value = data;
 		    
-		    liveoc_update(oc_value);
+			    liveoc_update(oc_value);
+			}
 
 		    pr_info("LIVEOC oc-value set to %u\n", oc_value);
 		}
