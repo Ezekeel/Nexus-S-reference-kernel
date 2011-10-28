@@ -45,6 +45,7 @@ drivers/mtd/onenand/Kconfig
 drivers/mtd/onenand/samsung.c
 drivers/power/max17040_battery.c
 drivers/power/s5pc110_battery.c
+drivers/serial/samsung.c
 drivers/video/samsung/s3cfb.c
 drivers/video/samsung/s3cfb_nt35580.c
 drivers/video/samsung/s3cfb_tl2796.c
