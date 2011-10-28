@@ -38,6 +38,7 @@
 extern bool suspend_ongoing(void);
 extern bool bt_is_running(void);
 extern int pm_notifier_call_chain(unsigned long val);
+extern bool gps_is_running(void);
 
 /*
  * For saving & restoring VIC register before entering
@@ -366,9 +367,9 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 
 #ifdef CONFIG_CPU_DIDLE
 #ifdef CONFIG_S5P_INTERNAL_DMA
-	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || gps_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
 #else
-	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || gps_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
 #endif
 	    s5p_enter_idle();
 	} else {
