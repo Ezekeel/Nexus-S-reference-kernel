@@ -373,6 +373,9 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 {
 	struct timeval before, after;
 	int idle_time;
+#ifdef CONFIG_CPU_DIDLE
+	int idle_state = 0;
+#endif
 
 	local_irq_disable();
 	do_gettimeofday(&before);
@@ -386,8 +389,10 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 	    s5p_enter_idle();
 	} else if (bt_is_running() || gps_is_running()) {
 	    s5p_enter_didle(true);
+	    idle_state = 1;
 	} else {
 	    s5p_enter_didle(false);
+	    idle_state = 2;
 	}
 #else   
 	s5p_enter_idle();
@@ -397,6 +402,9 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 	local_irq_enable();
 	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
 	    (after.tv_usec - before.tv_usec);
+#ifdef CONFIG_CPU_DIDLE
+	report_idle_time(idle_state, idle_time);
+#endif
 	return idle_time;
 }
 
