@@ -223,10 +223,12 @@ static void s5p_gpio_pdn_conf(void)
 	} while (gpio_base <= S5PV210_MP28_BASE);
 }
 
-static void s5p_enter_didle(void)
+static void s5p_enter_didle(bool top_on)
 {
 	unsigned long tmp;
 	unsigned long save_eint_mask;
+
+	pm_notifier_call_chain(PM_SUSPEND_PREPARE);
 
 	/* store the physical address of the register recovery block */
 	__raw_writel(phy_regs_save, S5P_INFORM2);
@@ -246,8 +248,10 @@ static void s5p_enter_didle(void)
 	__raw_writel(0xffffffff, S5P_VIC2REG(VIC_INT_ENABLE_CLEAR));
 	__raw_writel(0xffffffff, S5P_VIC3REG(VIC_INT_ENABLE_CLEAR));
 
-	/* GPIO Power Down Control */
-	s5p_gpio_pdn_conf();
+	if (!top_on) {
+	    /* GPIO Power Down Control */
+	    s5p_gpio_pdn_conf();
+	}
 
 	/*
 	 * Configure external interrupt wakeup mask
@@ -282,7 +286,11 @@ static void s5p_enter_didle(void)
 	 */
 	tmp = __raw_readl(S5P_IDLE_CFG);
 	tmp &= ~(0x3fU << 26);
-	tmp |= ((1<<30) | (1<<28) | (1<<26) | (1<<0));
+	if (top_on) {
+	    tmp |= ((2<<30) | (2<<28) | (1<<26) | (1<<0));
+	} else {
+	    tmp |= ((1<<30) | (1<<28) | (1<<26) | (1<<0));
+	}
 	__raw_writel(tmp, S5P_IDLE_CFG);
 
 	/* Power mode Config setting */
@@ -326,16 +334,20 @@ skipped_didle:
 	tmp &= S5P_CFG_WFI_CLEAN;
 	__raw_writel(tmp, S5P_PWR_CFG);
 
-	/* Release retention GPIO/CF/MMC/UART IO */
-	tmp = __raw_readl(S5P_OTHERS);
-	tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF |	\
-		S5P_OTHERS_RET_MMC | S5P_OTHERS_RET_UART);
-	__raw_writel(tmp, S5P_OTHERS);
+	if (!top_on) {
+	    /* Release retention GPIO/CF/MMC/UART IO */
+	    tmp = __raw_readl(S5P_OTHERS);
+	    tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF |	\
+		    S5P_OTHERS_RET_MMC | S5P_OTHERS_RET_UART);
+	    __raw_writel(tmp, S5P_OTHERS);
+	}
 
 	__raw_writel(vic_regs[0], S5P_VIC0REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[1], S5P_VIC1REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[2], S5P_VIC2REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[3], S5P_VIC3REG(VIC_INT_ENABLE));
+
+	pm_notifier_call_chain(PM_POST_SUSPEND);
 }
 #endif
 
@@ -367,15 +379,15 @@ static int s5p_enter_idle_state(struct cpuidle_device *dev,
 
 #ifdef CONFIG_CPU_DIDLE
 #ifdef CONFIG_S5P_INTERNAL_DMA
-	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || gps_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint() || check_idmapos()) {
 #else
-	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || bt_is_running() || gps_is_running() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
+	if (!deepidle_is_enabled() || check_power_clock_gating() || suspend_ongoing() || loop_sdmmc_check() || check_usbotg_op() || check_rtcint()) {
 #endif
 	    s5p_enter_idle();
+	} else if (bt_is_running() || gps_is_running()) {
+	    s5p_enter_didle(true);
 	} else {
-	    pm_notifier_call_chain(PM_SUSPEND_PREPARE);
-	    s5p_enter_didle();
-	    pm_notifier_call_chain(PM_POST_SUSPEND);
+	    s5p_enter_didle(false);
 	}
 #else   
 	s5p_enter_idle();
