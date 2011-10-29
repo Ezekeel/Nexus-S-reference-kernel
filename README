@@ -13,7 +13,7 @@ The currently implemented modifications are:
   two partitions is additionally added as an extra partition.
 - 'Lazy' CPUfreq governor
 - Live OC version 1
-- Power saving state DEEP IDLE
+- Power saving state DEEP IDLE version 2
 
 Files changed:
 arch/arm/mach-s5pv210/cpu-freq.c
