@@ -10,15 +10,18 @@
 #include <linux/init.h>
 #include <linux/device.h>
 #include <linux/miscdevice.h>
+#include <linux/mutex.h>
 #include <linux/deep_idle.h>
 
 #define DEEPIDLE_VERSION 2
 
 #define NUM_IDLESTATES 3
 
+static DEFINE_MUTEX(lock);
+
 static bool deepidle_enabled = false;
 
-static unsigned long num_idlecalls[NUM_IDLESTATES], time_in_idlestate[NUM_IDLESTATES]; 
+static unsigned long long num_idlecalls[NUM_IDLESTATES], time_in_idlestate[NUM_IDLESTATES]; 
 
 static ssize_t deepidle_status_read(struct device * dev, struct device_attribute * attr, char * buf)
 {
@@ -58,11 +61,40 @@ static ssize_t deepidle_status_write(struct device * dev, struct device_attribut
 
 static ssize_t show_idle_stats(struct device * dev, struct device_attribute * attr, char * buf)
 {
-    return sprintf(buf, "idle state             total (average)\n===================================================\nIDLE                   %lums (%lums)\nDEEP IDLE (TOP=ON)     %lums (%lums)\nDEEP IDLE (TOP=OFF)    %lums (%lums)\n",
-		   time_in_idlestate[0], num_idlecalls[0] == 0 ? 0 : time_in_idlestate[0] / num_idlecalls[0],
-		   time_in_idlestate[1], num_idlecalls[1] == 0 ? 0 : time_in_idlestate[1] / num_idlecalls[1],
-		   time_in_idlestate[2], num_idlecalls[2] == 0 ? 0 : time_in_idlestate[2] / num_idlecalls[2]);
+    int i;
+    unsigned long long msecs_in_idlestate[NUM_IDLESTATES], avg_in_idlestate[NUM_IDLESTATES];
+
+    mutex_lock(&lock);
+
+    for (i = 0; i < NUM_IDLESTATES; i++) {
+	msecs_in_idlestate[i] = time_in_idlestate[i] + 500;
+	do_div(msecs_in_idlestate[i], 1000);
+	if (num_idlecalls[i] == 0) {
+	    avg_in_idlestate[i] = 0;
+	} else {
+	    avg_in_idlestate[i] = msecs_in_idlestate[i];
+	    do_div(avg_in_idlestate[i], num_idlecalls[i]);
+	}
+    }
+
+    mutex_unlock(&lock);
+
+    return sprintf(buf, "idle state             total (average)\n===================================================\nIDLE                   %llums (%llums)\nDEEP IDLE (TOP=ON)     %llums (%llums)\nDEEP IDLE (TOP=OFF)    %llums (%llums)\n",
+		   msecs_in_idlestate[0], avg_in_idlestate[0], msecs_in_idlestate[1], avg_in_idlestate[1], msecs_in_idlestate[2], avg_in_idlestate[2]);
 }
+
+static void reset_stats(void)
+{
+    int i;
+
+    for (i = 0; i < NUM_IDLESTATES; i++)
+	{
+	    num_idlecalls[i] = 0;
+	    time_in_idlestate[i] = 0;
+	}
+
+    return;
+}   
 
 static ssize_t reset_idle_stats(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
@@ -72,13 +104,9 @@ static ssize_t reset_idle_stats(struct device * dev, struct device_attribute * a
 	{
 	    if (data == 1)
 		{
-		    int i;
-
-		    for (i = 0; i < NUM_IDLESTATES; i++)
-			{
-			    num_idlecalls[i] = 0;
-			    time_in_idlestate[i] = 0;
-			}
+		    mutex_lock(&lock);
+		    reset_stats();
+		    mutex_unlock(&lock);
 		}
 	    else 
 		{
@@ -131,8 +159,17 @@ EXPORT_SYMBOL(deepidle_is_enabled);
 
 void report_idle_time(int idle_state, int idle_time)
 {
+    mutex_lock(&lock);
+
     num_idlecalls[idle_state]++;
-    time_in_idlestate[idle_state] += (unsigned int)(idle_time + 500) / 1000;
+    time_in_idlestate[idle_state] += (unsigned long long)idle_time;
+
+    if (num_idlecalls[idle_state] == 0 || time_in_idlestate[idle_state] < (unsigned long long)idle_time)
+	{
+	    reset_stats();
+	}
+
+    mutex_unlock(&lock);
 
     return;
 }
@@ -140,7 +177,7 @@ EXPORT_SYMBOL(report_idle_time);
 
 static int __init deepidle_init(void)
 {
-    int i, ret;
+    int ret;
 
     pr_info("%s misc_register(%s)\n", __FUNCTION__, deepidle_device.name);
 
@@ -159,11 +196,9 @@ static int __init deepidle_init(void)
 	    pr_err("Failed to create sysfs group for device (%s)!\n", deepidle_device.name);
 	}
 
-    for (i = 0; i < NUM_IDLESTATES; i++)
-	{
-	    num_idlecalls[i] = 0;
-	    time_in_idlestate[i] = 0;
-	}
+    mutex_lock(&lock);
+    reset_stats();
+    mutex_unlock(&lock);
 
     return 0;
 }
