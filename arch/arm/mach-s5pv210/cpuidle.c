@@ -29,7 +29,6 @@
 #ifdef CONFIG_CPU_DIDLE
 #include <linux/dma-mapping.h>
 #include <linux/deep_idle.h>
-#include <linux/notifier.h>
 
 #include <plat/regs-otg.h>
 #include <mach/cpuidle.h>
@@ -37,7 +36,6 @@
 
 extern bool suspend_ongoing(void);
 extern bool bt_is_running(void);
-extern int pm_notifier_call_chain(unsigned long val);
 extern bool gps_is_running(void);
 
 /*
@@ -228,8 +226,6 @@ static void s5p_enter_didle(bool top_on)
 	unsigned long tmp;
 	unsigned long save_eint_mask;
 
-	pm_notifier_call_chain(PM_SUSPEND_PREPARE);
-
 	/* store the physical address of the register recovery block */
 	__raw_writel(phy_regs_save, S5P_INFORM2);
 
@@ -346,8 +342,6 @@ skipped_didle:
 	__raw_writel(vic_regs[1], S5P_VIC1REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[2], S5P_VIC2REG(VIC_INT_ENABLE));
 	__raw_writel(vic_regs[3], S5P_VIC3REG(VIC_INT_ENABLE));
-
-	pm_notifier_call_chain(PM_POST_SUSPEND);
 }
 #endif
 
