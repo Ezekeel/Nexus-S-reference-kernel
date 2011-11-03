@@ -14,6 +14,7 @@ The currently implemented modifications are:
 - 'Lazy' CPUfreq governor
 - Live OC version 1
 - Power saving state DEEP IDLE version 2
+- Custom Voltage version 1
 
 Files changed:
 arch/arm/mach-s5pv210/cpu-freq.c
@@ -35,6 +36,7 @@ drivers/input/misc/gpio_event.c
 drivers/input/touchscreen/mxt224.c
 drivers/misc/bld.c
 drivers/misc/blx.c
+drivers/misc/custom_voltage.c
 drivers/misc/deep_idle.c
 drivers/misc/Kconfig
 drivers/misc/live_oc.c
