@@ -737,6 +737,53 @@ void liveoc_update(unsigned int oc_value)
 EXPORT_SYMBOL(liveoc_update);
 #endif
 
+#ifdef CONFIG_CUSTOM_VOLTAGE
+static const int num_freqs = sizeof(dvs_conf) / sizeof(struct s5pv210_dvs_conf);
+
+void customvoltage_update(unsigned long * voltages)
+{
+    int i;
+
+    mutex_lock(&set_freq_lock);
+
+    for (i = 0; i < num_freqs; i++)
+	{
+	    if (voltages[i] > arm_volt_max)
+		voltages[i] = arm_volt_max;
+	    dvs_conf[i].arm_volt = voltages[i];
+
+	    if (voltages[num_freqs + i] > int_volt_max)
+		voltages[num_freqs + i] = int_volt_max;
+	    dvs_conf[i].int_volt = voltages[num_freqs + i];
+	}
+
+    mutex_unlock(&set_freq_lock);
+
+    return;
+}
+EXPORT_SYMBOL(customvoltage_update);
+
+int customvoltage_numfreqs(void)
+{
+    return num_freqs;
+}
+EXPORT_SYMBOL(customvoltage_numfreqs);
+
+void customvoltage_voltages(unsigned long * voltages)
+{
+    int i;
+
+    for (i = 0; i < num_freqs; i++)
+	{
+	    voltages[i] = dvs_conf[i].arm_volt;
+	    voltages[num_freqs + i] = dvs_conf[i].int_volt;
+	}
+
+    return;
+}
+EXPORT_SYMBOL(customvoltage_voltages);
+#endif
+
 static int __init s5pv210_cpufreq_driver_init(struct cpufreq_policy *policy)
 {
 	u32 rate ;
