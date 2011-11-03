@@ -267,24 +267,32 @@ static void s5p_enter_didle(bool top_on)
 	/*
 	 * Wakeup source configuration for didle
 	 * We use the same wakeup mask as for sleep state plus make
-	 * sure that at least RTC TICK and I2S are enabled as wakeup 
+	 * sure that at least RTC ALARM and I2S are enabled as wakeup 
 	 * sources
 	 */
 	tmp = s3c_irqwake_intmask;
-	tmp &= ~((1<<2) | (1<<13));
+	tmp &= ~((1<<1) | (1<<13));
 	__raw_writel(tmp, S5P_WAKEUP_MASK);
 
-	/*
-	 * IDLE config register set
-	 * TOP Memory retention off
-	 * TOP Memory LP mode
-	 * ARM_L2_Cacheret on
-	 */
 	tmp = __raw_readl(S5P_IDLE_CFG);
 	tmp &= ~(0x3fU << 26);
 	if (top_on) {
+	    /*
+	     * IDLE config register set
+	     * TOP_LOGIC = ON
+	     * TOP_MEMORY = ON
+	     * ARM_L2CACHE = Retention
+	     * CFG_DIDLE = DEEP
+	     */
 	    tmp |= ((2<<30) | (2<<28) | (1<<26) | (1<<0));
 	} else {
+	    /*
+	     * IDLE config register set
+	     * TOP_LOGIC = Retention
+	     * TOP_MEMORY = Retention
+	     * ARM_L2CACHE = Retention
+	     * CFG_DIDLE = DEEP
+	     */
 	    tmp |= ((1<<30) | (1<<28) | (1<<26) | (1<<0));
 	}
 	__raw_writel(tmp, S5P_IDLE_CFG);
