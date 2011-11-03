@@ -746,16 +746,15 @@ void customvoltage_update(unsigned long * voltages)
 
     mutex_lock(&set_freq_lock);
 
-    for (i = 0; i < num_freqs; i++)
-	{
-	    if (voltages[i] > arm_volt_max)
-		voltages[i] = arm_volt_max;
-	    dvs_conf[i].arm_volt = voltages[i];
-
-	    if (voltages[num_freqs + i] > int_volt_max)
-		voltages[num_freqs + i] = int_volt_max;
-	    dvs_conf[i].int_volt = voltages[num_freqs + i];
-	}
+    for (i = 0; i < num_freqs; i++) {
+	if (voltages[i] > arm_volt_max)
+	    voltages[i] = arm_volt_max;
+	dvs_conf[i].arm_volt = voltages[i];
+	
+	if (voltages[num_freqs + i] > int_volt_max)
+	    voltages[num_freqs + i] = int_volt_max;
+	dvs_conf[i].int_volt = voltages[num_freqs + i];
+    }
 
     mutex_unlock(&set_freq_lock);
 
@@ -769,19 +768,23 @@ int customvoltage_numfreqs(void)
 }
 EXPORT_SYMBOL(customvoltage_numfreqs);
 
-void customvoltage_voltages(unsigned long * voltages)
+void customvoltage_freqvolt(unsigned long * freqs, unsigned long * voltages)
 {
-    int i;
+    int i = 0;
 
-    for (i = 0; i < num_freqs; i++)
-	{
-	    voltages[i] = dvs_conf[i].arm_volt;
-	    voltages[num_freqs + i] = dvs_conf[i].int_volt;
-	}
+    while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+	freqs[freq_table[i].index] = freq_table[i].frequency;
+	i++;
+    }
 
+    for (i = 0; i < num_freqs; i++) {
+	voltages[i] = dvs_conf[i].arm_volt;
+	voltages[num_freqs + i] = dvs_conf[i].int_volt;
+    }
+	    
     return;
 }
-EXPORT_SYMBOL(customvoltage_voltages);
+EXPORT_SYMBOL(customvoltage_freqvolt);
 #endif
 
 static int __init s5pv210_cpufreq_driver_init(struct cpufreq_policy *policy)

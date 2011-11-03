@@ -16,27 +16,27 @@
 
 extern void customvoltage_update(unsigned long * voltages);
 extern int customvoltage_numfreqs(void);
-extern void customvoltage_voltages(unsigned long * voltages);
+extern void customvoltage_freqvolt(unsigned long * freqs, unsigned long * voltages);
 
 static int num_freqs;
 
 static unsigned long * voltages = NULL;
+static unsigned long * freqs = NULL;
 
-static ssize_t customvoltage_armvolt_read(struct device * dev, struct device_attribute * attr, char * buf)
+ssize_t customvoltage_armvolt_read(struct device * dev, struct device_attribute * attr, char * buf)
 {
     int i, j = 0;
 
     for (i = 0; i < num_freqs; i++)
 	{
-	    j += sprintf(&buf[j], "%lu ", voltages[i] / 1000);
+	    j += sprintf(&buf[j], "%lumhz: %lu mV\n", freqs[i] / 1000, voltages[i] / 1000);
 	}
-
-    j += sprintf(&buf[j], "\n");
 
     return j;
 }
+EXPORT_SYMBOL(customvoltage_armvolt_read);
 
-static ssize_t customvoltage_armvolt_write(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
+ssize_t customvoltage_armvolt_write(struct device * dev, struct device_attribute * attr, const char * buf, size_t size)
 {
     int i = 0, j = 0, next_freq = 0;
     unsigned long voltage;
@@ -74,6 +74,7 @@ static ssize_t customvoltage_armvolt_write(struct device * dev, struct device_at
 
     return size;
 }
+EXPORT_SYMBOL(customvoltage_armvolt_write);
 
 static ssize_t customvoltage_intvolt_read(struct device * dev, struct device_attribute * attr, char * buf)
 {
@@ -81,10 +82,8 @@ static ssize_t customvoltage_intvolt_read(struct device * dev, struct device_att
 
     for (i = 0; i < num_freqs; i++)
 	{
-	    j += sprintf(&buf[j], "%lu ", voltages[num_freqs + i] / 1000);
+	    j += sprintf(&buf[j], "%lumhz: %lu mV\n", freqs[i] / 1000, voltages[num_freqs + i] / 1000);
 	}
-
-    j += sprintf(&buf[j], "\n");
 
     return j;
 }
@@ -180,8 +179,9 @@ static int __init customvoltage_init(void)
     num_freqs = customvoltage_numfreqs();
 
     voltages = kzalloc(2 * num_freqs * sizeof(unsigned long), GFP_KERNEL);
+    freqs = kzalloc(num_freqs * sizeof(unsigned long), GFP_KERNEL);
 
-    customvoltage_voltages(voltages);
+    customvoltage_freqvolt(freqs, voltages);
 
     return 0;
 }
