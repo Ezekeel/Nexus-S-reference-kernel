@@ -66,8 +66,13 @@ struct s5pv210_dvs_conf {
 	unsigned long       int_volt;   /* uV */
 };
 
+#ifdef CONFIG_CUSTOM_VOLTAGE
+unsigned long arm_volt_max = 1400000;
+unsigned long int_volt_max = 1250000;
+#else
 const unsigned long arm_volt_max = 1400000;
 const unsigned long int_volt_max = 1250000;
+#endif
 
 static struct s5pv210_dvs_conf dvs_conf[] = {
 	[L0] = {
@@ -740,27 +745,54 @@ EXPORT_SYMBOL(liveoc_update);
 #ifdef CONFIG_CUSTOM_VOLTAGE
 static const int num_freqs = sizeof(dvs_conf) / sizeof(struct s5pv210_dvs_conf);
 
-void customvoltage_update(unsigned long * voltages)
+void customvoltage_updatearmvolt(unsigned long * arm_voltages)
 {
     int i;
 
     mutex_lock(&set_freq_lock);
 
     for (i = 0; i < num_freqs; i++) {
-	if (voltages[i] > arm_volt_max)
-	    voltages[i] = arm_volt_max;
-	dvs_conf[i].arm_volt = voltages[i];
-	
-	if (voltages[num_freqs + i] > int_volt_max)
-	    voltages[num_freqs + i] = int_volt_max;
-	dvs_conf[i].int_volt = voltages[num_freqs + i];
+	if (arm_voltages[i] > arm_volt_max)
+	    arm_voltages[i] = arm_volt_max;
+	dvs_conf[i].arm_volt = arm_voltages[i];
     }
 
     mutex_unlock(&set_freq_lock);
 
     return;
 }
-EXPORT_SYMBOL(customvoltage_update);
+EXPORT_SYMBOL(customvoltage_updatearmvolt);
+
+void customvoltage_updateintvolt(unsigned long * int_voltages)
+{
+    int i;
+
+    mutex_lock(&set_freq_lock);
+
+    for (i = 0; i < num_freqs; i++) {
+	if (int_voltages[i] > int_volt_max)
+	    int_voltages[i] = int_volt_max;
+	dvs_conf[i].int_volt = int_voltages[i];
+    }
+
+    mutex_unlock(&set_freq_lock);
+
+    return;
+}
+EXPORT_SYMBOL(customvoltage_updateintvolt);
+
+void customvoltage_updatemaxvolt(unsigned long * max_voltages)
+{
+    mutex_lock(&set_freq_lock);
+
+    arm_volt_max = max_voltages[0];
+    int_volt_max = max_voltages[1];
+
+    mutex_unlock(&set_freq_lock);
+
+    return;
+}
+EXPORT_SYMBOL(customvoltage_updatemaxvolt);
 
 int customvoltage_numfreqs(void)
 {
@@ -768,7 +800,8 @@ int customvoltage_numfreqs(void)
 }
 EXPORT_SYMBOL(customvoltage_numfreqs);
 
-void customvoltage_freqvolt(unsigned long * freqs, unsigned long * voltages)
+void customvoltage_freqvolt(unsigned long * freqs, unsigned long * arm_voltages,
+			    unsigned long * int_voltages, unsigned long * max_voltages)
 {
     int i = 0;
 
@@ -778,10 +811,13 @@ void customvoltage_freqvolt(unsigned long * freqs, unsigned long * voltages)
     }
 
     for (i = 0; i < num_freqs; i++) {
-	voltages[i] = dvs_conf[i].arm_volt;
-	voltages[num_freqs + i] = dvs_conf[i].int_volt;
+	arm_voltages[i] = dvs_conf[i].arm_volt;
+	int_voltages[i] = dvs_conf[i].int_volt;
     }
-	    
+
+    max_voltages[0] = arm_volt_max;
+    max_voltages[1] = int_volt_max;
+
     return;
 }
 EXPORT_SYMBOL(customvoltage_freqvolt);
