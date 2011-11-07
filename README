@@ -1,3 +1,7 @@
+THIS KERNEL IS NOT SUPPORTED ANY LONGER AND WILL NOT RECEIVE ANY FUTURE
+UPDATES. IT HAS BEEN REPLACED BY https://github.com/Ezekeel/GLaDOS-nexus-s.
+
+
 This is the reference kernel for my kernel modifications which I currently 
 use on my Nexus S i9020 (with CM 7.03).
 
@@ -70,3 +74,7 @@ fsf.org: These guys are at the frontline when it comes to keeping Linux free
 and fighting these greedy bastards who think they are entitled to collect 
 royalties and other fees from Linux users due to some silly patents - and if 
 Linux falls, Android will be next.
+
+
+THIS KERNEL IS NOT SUPPORTED ANY LONGER AND WILL NOT RECEIVE ANY FUTURE
+UPDATES. IT HAS BEEN REPLACED BY https://github.com/Ezekeel/GLaDOS-nexus-s.
